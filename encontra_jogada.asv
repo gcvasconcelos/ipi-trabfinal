@@ -1,0 +1,20 @@
+clear all
+close all
+
+T = imread('X_rots.jpg');
+%T = rgb2gray(T);
+imshow(T);
+
+I = douimread('detection.png'));
+
+H = vision.TemplateMatcher;
+
+%[linha, coluna] = size(I);
+
+%LOC = step(H,I,T, [1 1 coluna linha]);
+LOC = step(H,I,T);
+
+imshow(I);
+hold on 
+plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','red');
+hold off

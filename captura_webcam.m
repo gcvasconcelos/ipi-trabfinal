@@ -4,13 +4,15 @@ clear all
 %pkg load image-acquisition
 %pkg load image
 
-%obj = videoinput("v4l2", "/dev/video0");
-%set(obj, "VideoFormat", "RGB3")
-%set(obj, "VideoResolution", [1280 720])
-%preview(obj) %ver imagem da camera live
+obj = videoinput("v4l2", "/dev/video0");
+set(obj, "VideoFormat", "RGB3")
+set(obj, "VideoResolution", [1280 720])
+preview(obj) %ver imagem da camera live
+pause;
 %start(obj)
 %img = getsnapshot(obj);
 %stop(obj)
+pause
 
 img = imread('melhorcaso.jpg');
 figure, imshow(img);
@@ -47,3 +49,5 @@ for k = 1:length(linhas)
 end
 hold off
 
+R = regionprops(bordas,'Area','BoundingBox');
+%plot(R.BoundingBox(:,1),R.BoundingBox(:,2),'LineWidth',2,'Color','red');
