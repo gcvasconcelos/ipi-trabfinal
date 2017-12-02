@@ -1,5 +1,4 @@
 close all 
-clear all
 clc
 
 % obj = videoinput("v4l2", "/dev/video0");
