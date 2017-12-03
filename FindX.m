@@ -1,4 +1,4 @@
-function Bool = FindX(prevframe, frame, board)
+function bool = FindX(prevframe, frame, board)
     %Faz diferença entre frame
     diff = prevframe-frame;
     diff = im2bw(diff, 0.4);
@@ -17,7 +17,7 @@ function Bool = FindX(prevframe, frame, board)
     [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
     center = [w,v];
     
-    Bool = 0;
+    bool = 0;
     
     %localização
     x = center(1);
@@ -48,6 +48,5 @@ function Bool = FindX(prevframe, frame, board)
     %escreve no board
     board(board_y,board_x) = 1;
     
-    Bool = 1;
-    
+    bool = 1;
 end

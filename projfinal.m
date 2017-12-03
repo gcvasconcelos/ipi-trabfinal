@@ -9,6 +9,7 @@ board = zeros(3, 3);
 frame = getSnapshot(cam);
 
 result = won(board);
+hold on
 while result == -1
     lastframe = frame;
     frame = getSnapshot(cam);
@@ -17,11 +18,15 @@ while result == -1
     pause;
     diff = psnr(frame, lastframe);
     if (diff < 22)
-        playerTurn(lastframe, frame, board);
-        computerTurn(frame, board, 'o');
+        check = findCircle(lastframe, frame, board);
+        if (check == 'x')
+            findCross(lastframe, frame, board);
+        end
+        computerTurn(frame, board, check);
         result = won(board);
     end
 end
+hold off
 
 checkWin(result);
 
@@ -32,17 +37,12 @@ function tmp = getSnapshot(cam)
     tmp = imresize(tmp, [200, 200]);
 end
 
-% abre imagem de testes e formata para analise
-function img = openImage(name)
-    img = imread(name);
-    img = rgb2gray(img);
-    img = imresize(img, [200, 200]);
-end
-
 % segmenta a imagem utilizando os pontos de Harrris
 % retorna apenas a parte da imagem com o tabuleiro
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
+    % pega o menor valor a esquerda e acima e o maior valor a direita e
+    % abaixo para considerar como as bordas da nova imagem
     x_c = floor(abs(corners.Location(:,2)));
     y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
@@ -51,18 +51,19 @@ end
 
 % detecta qual jogada aconteceu entre cada estado do frame
 % registra a jogada no board
-function [] = playerTurn(frame, nextframe, board)
-    diff = frame-nextframe;
+function bool = findCircle(prevframe, frame, board)
+    diff = prevframe-frame;
     diff = im2bw(diff, 0.4);
     center = floor(imfindcircles(diff,[6 18]));
     if (length(center) > 1)
         center = center(1,:);
     elseif (isempty(center))
+        bool = 'x';
         return;
     end
 
     x = center(1); y = center(2);
-    board_size = size(nextframe);
+    board_size = size(frame);
     cell_x = board_size(1)/3; cell_y = board_size(2)/3;
 
     if (x>cell_x)
@@ -86,6 +87,56 @@ function [] = playerTurn(frame, nextframe, board)
     end
 
     board(board_x,board_y) = 1;
+    bool = 'o';
+end
+
+function findCross(prevframe, frame, board)
+    %Faz diferença entre frame
+    diff = prevframe-frame;
+    diff = im2bw(diff, 0.4);
+    
+    %encontra o X
+    %segmentação
+    img_border = edge(diff,'canny', 0.5);
+    img_border = imclearborder(img_border);
+    %hough lines
+    [H,theta,rho] = hough(img_border);
+    P = houghpeaks(H,5);
+    lines = houghlines(img_border,theta,rho,P);
+    %checa se tem interseccao
+    xy = [lines(1).point1; lines(1).point2];
+    uv = [lines(2).point1; lines(2).point2];
+    [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+    center = [w,v];
+    
+    %localização
+    x = center(1);
+    y = center(2);
+    board_size = size(img2);
+    cell_x = board_size(1)/3;
+    cell_y = board_size(2)/3;
+
+    if (x>cell_x)
+        if (x>(cell_x*2))
+            board_x = 3;
+        else
+            board_x = 2;
+        end
+    else
+        board_x = 1;
+    end
+
+    if (y>cell_y)
+        if (y>(cell_y*2))
+            board_y = 3;
+        else
+            board_y = 2;
+        end
+    else
+        board_y = 1;
+    end
+    %escreve no board
+    board(board_y,board_x) = 1;
 end
 
 % jogada do PC
@@ -119,19 +170,19 @@ function [] = computerTurn(frame, board, player)
     col = (A(pc,1) + h/6);
 
     if player == 'x'
-        %plota circulo
-       hold on
+        % plota O
+        hold on
         viscircles([col row],20,'EdgeColor','red');
-       hold off
-%         hold on
-%         t = 0:0.1:2*pi;
-%         x = cos(t)/2+0.5;
-%         y = sin(t)/2+0.5;
-%         plot(x+col, y+row)
-%         hold off
+        hold off
+        % hold on
+        % t = 0:0.1:2*pi;
+        % x = cos(t)/2+0.5;
+        % y = sin(t)/2+0.5;
+        % plot(x+col, y+row)
+        % hold off
     else
-     %plota X
-     hold on
+        % plota X
+        hold on
         x = 0:1;
         pos = 0:1;
         neg = 1-x;
@@ -166,15 +217,17 @@ function result = won(board)
         result = board(1,1);
     elseif (board(1,3) == board(2,2) && board(1,3) == board(3,1) && board(2,2) ~= 0)
         result = board(1,3);
+    % velha
     elseif ~ismember(board, 0)
         result = 0;
+    % se eh apenas uma jogada comum
     else
         result = -1;
     end
 end
 
+% verifica quem venceu e printa na tela
 function [] = checkWin(result)
-
     if (result == 0)
         warndlg('Ninguém ganhou!')
     elseif result == 1
