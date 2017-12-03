@@ -6,23 +6,32 @@ cam = webcam;
 preview(cam);
 
 board = zeros(3, 3);
+%pega primeiro frame sem jogadas
 frame = getSnapshot(cam);
+frame = getBoard(frame);
+
 
 result = won(board);
+imshow(frame)
 hold on
 while result == -1
     lastframe = frame;
+    pause;
+
+    %pega primeira jogada
     frame = getSnapshot(cam);
     frame = getBoard(frame);
+    
+%     imshow(frame)
+%     find(frame==1)
 
-    pause;
     diff = psnr(frame, lastframe);
-    if (diff < 22)
-        check = findCircle(lastframe, frame, board);
+    if (diff < 40)
+        [check, board] = findCircle(lastframe, frame, board);
         if (check == 'x')
-            findCross(lastframe, frame, board);
+            board = findCross(lastframe, frame, board);
         end
-        computerTurn(frame, board, check);
+        board = computerTurn(frame, board, check);
         result = won(board);
     end
 end
@@ -51,9 +60,13 @@ end
 
 % detecta qual jogada aconteceu entre cada estado do frame
 % registra a jogada no board
-function bool = findCircle(prevframe, frame, board)
+function [bool, board] = findCircle(prevframe, frame, board)
+
+    %diferenca entre frames
     diff = prevframe-frame;
-    diff = im2bw(diff, 0.4);
+    %diff = im2bw(diff, 0.4);
+    diff = imbinarize(diff);
+
     center = floor(imfindcircles(diff,[6 18]));
     if (length(center) > 1)
         center = center(1,:);
@@ -62,6 +75,7 @@ function bool = findCircle(prevframe, frame, board)
         return;
     end
 
+    %localização
     x = center(1); y = center(2);
     board_size = size(frame);
     cell_x = board_size(1)/3; cell_y = board_size(2)/3;
@@ -90,10 +104,12 @@ function bool = findCircle(prevframe, frame, board)
     bool = 'o';
 end
 
-function findCross(prevframe, frame, board)
+function board = findCross(prevframe, frame, board)
+
     %Faz diferença entre frame
     diff = prevframe-frame;
-    diff = im2bw(diff, 0.4);
+    %diff = im2bw(diff, 0.4);
+    diff = imbinarize(diff);
 
     %encontra o X
     %segmentação
@@ -140,7 +156,7 @@ function findCross(prevframe, frame, board)
 end
 
 % jogada do PC
-function [] = computerTurn(frame, board, player)
+function board = computerTurn(frame, board, player)
     % frame = frame atual
     % board = board sendo, 0 as posicoes vazias
     % player = a opção de jogada do player
@@ -235,6 +251,6 @@ function [] = checkWin(result)
     elseif result == 2
         warndlg('O Computador Ganhou')
     else
-warndlg('Ocorreu algum erro')
+        warndlg('Ocorreu algum erro')
     end
 end
