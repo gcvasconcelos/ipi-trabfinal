@@ -119,11 +119,19 @@ function [] = computerTurn(frame, board, player)
     col = (A(pc,1) + h/6);
 
     if player == 'x'
-        hold on
-        viscircles([x y],30,'EdgeColor','b');
-        hold off
+        %plota circulo
+       hold on
+        viscircles([col row],20,'EdgeColor','red');
+       hold off
+%         hold on
+%         t = 0:0.1:2*pi;
+%         x = cos(t)/2+0.5;
+%         y = sin(t)/2+0.5;
+%         plot(x+col, y+row)
+%         hold off
     else
-        hold on
+     %plota X
+     hold on
         x = 0:1;
         pos = 0:1;
         neg = 1-x;
@@ -134,8 +142,8 @@ function [] = computerTurn(frame, board, player)
 end
 
 % analisa o board e detecta se alguem venceu
-% retorna a 1 se o 'O' venceu
-%           2 se o 'X' venceu
+% retorna a 1 se o 'Jogador' venceu
+%           2 se o 'Computador' venceu
 %           0 se deu velha
 %          -1 se nada aconteceu
 function result = won(board)
@@ -158,23 +166,22 @@ function result = won(board)
         result = board(1,1);
     elseif (board(1,3) == board(2,2) && board(1,3) == board(3,1) && board(2,2) ~= 0)
         result = board(1,3);
-    % empate
     elseif ~ismember(board, 0)
-        result = 2;
-    % se nada aconteceu
+        result = 0;
     else
         result = -1;
     end
 end
 
 function [] = checkWin(result)
-    if (result == 1)
-        warndlg('O venceu');
-    elseif (result == 2)
-        warndlg('X venceu');
-    elseif (result == 0)
-        warndlg('Deu velha');
+
+    if (result == 0)
+        warndlg('Ninguém ganhou!')
+    elseif result == 1
+        warndlg('O Jogador Ganhou')
+    elseif result == 2
+        warndlg('O Computador Ganhou')
     else
-        warndlg('Ocorreu algum erro');
+        warndlg('Ocorreu algum erro')
     end
 end
