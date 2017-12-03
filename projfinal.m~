@@ -8,7 +8,7 @@ preview(cam);
 board = zeros(3, 3);
 frame = getSnapshot(cam);
 
-for i=1:10
+while result == -1
     lastframe = frame;
     frame = getSnapshot(cam);
     frame = getBoard(frame);
@@ -17,10 +17,8 @@ for i=1:10
     diff = psnr(frame, lastframe);
     if (diff < 22)
         playerTurn(lastframe, frame, board);
-    else
-        i = i -1;
+        result = won(board);
     end
-    
 end
 
 
@@ -101,7 +99,8 @@ end
 
 % analisa o board e detecta se alguem venceu
 % retorna a 1 se o 'O' venceu
-%                   
+%          -1 se o 'X' venceu        
+%           0 se deu velha
 function result = won(board)
     % horizontal
     if (board(1,1) == board(1,2) && board(1,1) == board(1,3) && board(1,1) ~= 0)
@@ -123,7 +122,11 @@ function result = won(board)
     elseif (board(1,3) == board(2,2) && board(1,3) == board(3,1) && board(2,2) ~= 0)
         result = board(1,3);
     else
-        result = 0;
+        result = -1;
     end
 end
 
+function checkWin(board)
+    state = won(board);
+    if (state == 0)
+end
