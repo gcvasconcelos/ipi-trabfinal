@@ -13,8 +13,6 @@ img = getBoard(img);
 img2 = getBoard(img2);
 
 
-
-
 % borders = edge(img,'canny', 0.5);
 % [H,theta,rho] = hough(borders);
 % peaks = houghpeaks(H,5);
@@ -45,6 +43,65 @@ img2 = getBoard(img2);
 
 board = zeros(3, 3);
 
+%desenvolvimento do jogo
+player = 'x';
+
+[h,w] = size(img);
+A = [1 1; 1 w/3; 1 2*w/3;...
+    h/3 1; h/3 w/3; h/3 2*w/3;...
+    2*h/3 1; 2*h/3 w/3; 2*h/3 2*h/3];
+
+board(8) = 1;
+
+%detecta jogada do player
+free_space = find(~board);
+for i = 1:length(free_space)
+    indice = free_space(i);
+    frame_anterior = imcrop(img, [A(indice,1) A(indice,2) w/3 h/3]);
+    frame_atual = imcrop(img2, [A(indice,1) A(indice,2) w/3 h/3]);
+    if player == 'x'
+        T = imread('X_rots.jpg');
+        T = rgb2gray(T);
+        H = vision.TemplateMatcher;
+        I = imabsdiff(img,img2);
+        LOC = step(H,I,T);
+        break
+    else
+        [LOC, raddi] = imfindcircles(frame_atual, [15 30]);
+    end
+    if ~isempty(LOC)
+        break
+    end
+end
+
+%marca no board ajogada do player
+board(i) = 1;   %marca a jogada do player como 1
+figure, imshow(img2)
+hold on
+plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','blue');
+hold off
+
+%computador faz jogada
+%pc = randperm(find(~board)); %acha posicao aleatoria (nao funciona)
+pc = find(~board);
+pc = pc(1);%marca jogada do player
+
+board(pc) = 2;%marca jogada do pc
+
+y = (A(pc,2) + w/6);
+x = (A(pc,1) + h/6);
+
+if player == 'x'
+    hold on
+    viscircles([x y],30,'EdgeColor','b');
+    hold off
+else
+    hold on
+    plot(LOC(1),LOC(2),'x','LineWidth',50,'Color','red');
+    hold off
+end
+
+
 function img = openImage(name)
     img = imread(name);
     img = rgb2gray(img);
@@ -61,31 +118,4 @@ end
 
 
 
-function [] = computerTurn()
-end
-
-
-function result = won(board, op)
-    % horizontal
-    if (board(1,1) == board(1,2) && board(1,1) == board(1,3) && board(1,1) ~= 0)
-        result = board(1,1);
-    elseif (board(2,1) == board(2,2) && board(2,1) == board(2,3) && board(2,1) ~= 0)
-        result = board(2,1);
-    elseif (board(3,1) == board(3,2) && board(3,1) == board(3,3) && board(3,1) ~= 0)
-        result = board(3,1);
-    % vertical
-    elseif (board(1,1) == board(2,1) && board(1,1) == board(3,1) && board(3,1) ~= 0) 
-        result = board(1,1);
-    elseif (board(1,2) == board(2,2) && board(1,2) == board(3,2) && board(1,2) ~= 0) 
-        result = board(1,2);
-    elseif (board(1,3) == board(2,3) && board(1,3) == board(3,3) && board(1,3) ~= 0) 
-        result = board(1,3);
-    % diagonal
-    elseif (board(1,1) == board(2,2) && board(1,1) == board(3,3) && board(1,1) ~= 0)
-        result = board(1,1);
-    elseif (board(1,3) == board(2,2) && board(1,3) == board(3,1) && board(2,2) ~= 0)
-        result = board(1,3);
-    else
-        result = 0;
-end
 
