@@ -2,15 +2,22 @@ close all
 clear all
 clc
 
-% cam = webcam;
-% preview(cam);
-% snapshot(cam);
+cam = webcam;
+%preview(cam);
+img = snapshot(cam);
 
-img = openImage('teste2.jpg');
-img2 = openImage('teste3.jpg');
-
+img = rgb2gray(img);
+img = imresize(img, [300, 300]);
 img = getBoard(img);
-img2 = getBoard(img2);
+imshow(img)
+%pause
+
+
+%  img = openImage('teste2.jpg');
+%  img2 = openImage('teste3.jpg');
+% % 
+% img = getBoard(img);
+% img2 = getBoard(img2);
 
 
 % borders = edge(img,'canny', 0.5);
@@ -60,14 +67,32 @@ for i = 1:length(free_space)
     frame_anterior = imcrop(img, [A(indice,1) A(indice,2) w/3 h/3]);
     frame_atual = imcrop(img2, [A(indice,1) A(indice,2) w/3 h/3]);
     if player == 'x'
-        T = imread('X_rots.jpg');
-        T = rgb2gray(T);
-        H = vision.TemplateMatcher;
-        I = imabsdiff(img,img2);
-        LOC = step(H,I,T);
-        break
+%         T = imread('X_rots.jpg');
+%         T = rgb2gray(T);
+%         H = vision.TemplateMatcher;
+%         I = imabsdiff(img,img2);
+%         LOC = step(H,I,T);
+%         break
+    img_border = edge(frame_atual,'canny', 0.5);
+    img_border = imclearborder(img_border);
+    figure, imshow(img_border)
+    [H,theta,rho] = hough(img_border);
+    P = houghpeaks(H,8);
+    lines = houghlines(frame_atual,theta,rho,P);
+    for k = 1:length(lines)
+        xy = [lines(k).point1; lines(k).point2];
+        for l = 1:length(lines)
+            uv = [lines(l).point1; lines(l).point2];
+            if xy == uv 
+                break
+            end
+           LOC = polyxploly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+        end
+    end
+    pause
+
     else
-        [LOC, raddi] = imfindcircles(frame_atual, [15 30]);
+        [LOC, raddi] = imfindcircles(frame_anterior, [15 50]);
     end
     if ~isempty(LOC)
         break
@@ -76,7 +101,7 @@ end
 
 %marca no board ajogada do player
 board(i) = 1;   %marca a jogada do player como 1
-figure, imshow(img2)
+figure, imshow(img)
 hold on
 plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','blue');
 hold off
