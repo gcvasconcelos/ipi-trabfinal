@@ -6,12 +6,14 @@ clc
 % preview(cam);
 % snapshot(cam);
 
-img = imread('teste2.jpg');
-img = rgb2gray(img);
-img = imresize(img, [300, 300]);
+img = openImage('teste2.jpg');
+img2 = openImage('teste3.jpg');
 
 img = getBoard(img);
-figure, imshow(img);
+img2 = getBoard(img2);
+
+
+
 
 % borders = edge(img,'canny', 0.5);
 % [H,theta,rho] = hough(borders);
@@ -43,13 +45,18 @@ figure, imshow(img);
 
 board = zeros(3, 3);
 
-
+function img = openImage(name)
+    img = imread(name);
+    img = rgb2gray(img);
+    img = imresize(img, [300, 300]);
+end
 
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
     x_c = corners.Location(:,2);
     y_c = corners.Location(:,1);
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
+    board = imresize(board, [300, 300]);
 end
 
 
