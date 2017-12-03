@@ -41,8 +41,6 @@ end
 % retorna apenas a parte da imagem com o tabuleiro
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
-    % pega o menor valor a esquerda e acima e o maior valor a direita e
-    % abaixo para considerar como as bordas da nova imagem
     x_c = floor(abs(corners.Location(:,2)));
     y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
@@ -94,7 +92,7 @@ function findCross(prevframe, frame, board)
     %Faz diferença entre frame
     diff = prevframe-frame;
     diff = im2bw(diff, 0.4);
-
+    
     %encontra o X
     %segmentação
     img_border = edge(diff,'canny', 0.5);
@@ -108,13 +106,13 @@ function findCross(prevframe, frame, board)
     uv = [lines(2).point1; lines(2).point2];
     [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
     center = [w,v];
-
+    
     %localização
     x = center(1);
     y = center(2);
-    board_size = size(img2);
-    cell_x = board_size(1)/3;
-    cell_y = board_size(2)/3;
+    size = size(img2);
+    cell_x = size(1)/3;
+    cell_y = size(2)/3;
 
     if (x>cell_x)
         if (x>(cell_x*2))
@@ -226,7 +224,6 @@ function result = won(board)
     end
 end
 
-% verifica quem venceu e printa na tela
 function [] = checkWin(result)
     if (result == 0)
         warndlg('Ninguém ganhou!')
@@ -235,6 +232,6 @@ function [] = checkWin(result)
     elseif result == 2
         warndlg('O Computador Ganhou')
     else
-warndlg('Ocorreu algum erro')
+        warndlg('Ocorreu algum erro')
     end
 end
