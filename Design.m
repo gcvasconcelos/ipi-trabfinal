@@ -46,7 +46,7 @@ player = 'x';
 %detecta localizacao dos retangulos
 %detecta posicao da jogada do player
 %detecta simbolo utilizado
-%while ninguem ganha ou acaba os espaços
+%while ninguem ganha ou acaba os espaï¿½os
 %player = simbolo_identificado;
 %joga em posicao aleatora
 %end while
@@ -70,7 +70,7 @@ hold off
 %jogada do computador
 %pc = randperm(find(~board));
 pc = find(~board);
-pc = pc(1);%marca jogada do player
+pc = pc(1);
 
 board(pc) = 2;%marca jogada do pc
 

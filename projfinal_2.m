@@ -2,22 +2,22 @@ close all
 clear all
 clc
 
-cam = webcam;
-%preview(cam);
-img = snapshot(cam);
-
-img = rgb2gray(img);
-img = imresize(img, [300, 300]);
-img = getBoard(img);
-imshow(img)
+% cam = webcam;
+% %preview(cam);
+% img = snapshot(cam);
+% 
+% img = rgb2gray(img);
+% img = imresize(img, [300, 300]);
+% img = getBoard(img);
+% imshow(img)
 %pause
 
 
-%  img = openImage('teste2.jpg');
-%  img2 = openImage('teste3.jpg');
-% % 
-% img = getBoard(img);
-% img2 = getBoard(img2);
+ img = openImage('circulo2.jpg');
+ img2 = openImage('teste3.jpg');
+% 
+img = getBoard(img);
+img2 = getBoard(img2);
 
 
 % borders = edge(img,'canny', 0.5);
@@ -51,7 +51,7 @@ imshow(img)
 board = zeros(3, 3);
 
 %desenvolvimento do jogo
-player = 'x';
+player = 'o';
 
 [h,w] = size(img);
 A = [1 1; 1 w/3; 1 2*w/3;...
@@ -84,15 +84,15 @@ for i = 1:length(free_space)
         for l = 1:length(lines)
             uv = [lines(l).point1; lines(l).point2];
             if xy == uv 
-                break
+                continue
             end
-           LOC = polyxploly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+           [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
         end
     end
     pause
 
     else
-        [LOC, raddi] = imfindcircles(frame_anterior, [15 50]);
+        [LOC, raddi] = imfindcircles(frame_anterior, [6 18]);
     end
     if ~isempty(LOC)
         break
@@ -107,23 +107,27 @@ plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','blue');
 hold off
 
 %computador faz jogada
-%pc = randperm(find(~board)); %acha posicao aleatoria (nao funciona)
 pc = find(~board);
-pc = pc(1);%marca jogada do player
+pc = pc(randperm(length(pc)));
+pc = pc(1);
 
 board(pc) = 2;%marca jogada do pc
 
-y = (A(pc,2) + w/6);
-x = (A(pc,1) + h/6);
+row = (A(pc,2) + w/6);
+col = (A(pc,1) + h/6);
 
 if player == 'x'
     hold on
     viscircles([x y],30,'EdgeColor','b');
     hold off
 else
-    hold on
-    plot(LOC(1),LOC(2),'x','LineWidth',50,'Color','red');
-    hold off
+ hold on
+    x = 0:1;
+    pos = 0:1;
+    neg = 1-x;
+    plot(x+col, pos+row,'LineWidth',50,'Color','red')
+    plot(x+col, neg+row,'LineWidth',50,'Color','red')
+ hold off
 end
 
 

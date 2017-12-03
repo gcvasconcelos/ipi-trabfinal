@@ -17,7 +17,7 @@ while result == -1
     diff = psnr(frame, lastframe);
     if (diff < 22)
         playerTurn(lastframe, frame, board);
-        % computerTurn();
+        computerTurn(frame, board, 'o');
         result = won(board);
     end
 end
@@ -60,7 +60,7 @@ function [] = playerTurn(frame, nextframe, board)
     center = floor(imfindcircles(diff,[6 18]));
     if (length(center) > 1)
         center = center(1,:);
-    elseif (length(center) == 0)
+    elseif (isempty(center))
         return;
     end
     
@@ -92,7 +92,53 @@ function [] = playerTurn(frame, nextframe, board)
 end
 
 % jogada do PC
-function [] = computerTurn()
+function [] = computerTurn(frame, board, player)
+    %frame = frame atual
+    %board = board sendo, 0 as posicoes vazias
+    %player = a opção de jogada do player
+    %assim que o matlab lida com matrix
+    % |1| |4|  |7|
+    % |2| |5|  |8|
+    % |3| |6|  |9|
+    
+    %devide o board em regioes
+    [h,w] = size(frame);
+    
+    A = [1 1; 1 w/3; 1 2*w/3;...
+    h/3 1; h/3 w/3; h/3 2*w/3;...
+    2*h/3 1; 2*h/3 w/3; 2*h/3 2*h/3];
+
+    %supondo que espaços vazio sao 0
+    %procura pela primeira posicao vazia
+    %acha posicao aleatoria vazia
+    pc = find(~board);
+    pc = pc(randperm(length(pc)));
+    pc = pc(1);
+    
+
+    board(pc) = 2;%marca jogada do pc
+
+    row = (A(pc,2) + w/6);
+    col = (A(pc,1) + h/6);
+
+    if player == 'x'
+        hold on
+        viscircles([x y],30,'EdgeColor','b');
+        hold off
+    else
+     hold on
+        x = 0:1;
+        pos = 0:1;
+        neg = 1-x;
+        plot(x+col, pos+row,'LineWidth',60,'Color','red')
+        plot(x+col, neg+row,'LineWidth',60,'Color','red')
+     hold off
+    end
+
+
+
+
+
 end
 
 % analisa o board e detecta se alguem venceu
