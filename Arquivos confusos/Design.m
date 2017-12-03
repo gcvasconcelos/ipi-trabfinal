@@ -9,8 +9,8 @@ board = zeros(3, 3);
 % |2| |5|  |8|
 % |3| |6|  |9|
 
-img = imread('testex2.jpg');
-img = rgb2gray(img);
+ img = imread('../teste2.jpg');
+ img = rgb2gray(img);
 
 % img2 = imread('testex.jpg');
 % img2 = rgb2gray(img2);
@@ -25,12 +25,13 @@ A = [1 1; 1 w/3; 1 2*w/3;...
     h/3 1; h/3 w/3; h/3 2*w/3;...
     2*h/3 1; 2*h/3 w/3; 2*h/3 2*h/3];
 
-% B1 = imcrop(img, [A(1,2) A(1,1) w/3 h/3]);
-% B2 = imcrop(img, [A(2,2) A(2,1) w/3 h/3]);
-% B3 = imcrop(img, [A(3,2) A(3,1) w/3 h/3]);
-% imshow(B1)
-% figure, imshow(B2)
-% figure, imshow(B3)
+B1 = imcrop(img, [A(1,1) A(1,2) w/3 h/3]);
+B2 = imcrop(img, [A(2,1) A(2,2) w/3 h/3]);
+B3 = imcrop(img, [A(3,1) A(3,2) w/3 h/3]);
+imshow(B1)
+figure, imshow(B2)
+figure, imshow(B3)
+pasue
     
 % if player==1
 %     playermark='X';

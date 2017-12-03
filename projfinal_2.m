@@ -13,7 +13,7 @@ clc
 %pause
 
 
- img = openImage('circulo2.jpg');
+ img = openImage('teste2.jpg');
  img2 = openImage('teste3.jpg');
 % 
 img = getBoard(img);
@@ -51,7 +51,7 @@ img2 = getBoard(img2);
 board = zeros(3, 3);
 
 %desenvolvimento do jogo
-player = 'o';
+player = 'x';
 
 [h,w] = size(img);
 A = [1 1; 1 w/3; 1 2*w/3;...
@@ -61,51 +61,61 @@ A = [1 1; 1 w/3; 1 2*w/3;...
 board(8) = 1;
 
 %detecta jogada do player
-free_space = find(~board);
-for i = 1:length(free_space)
-    indice = free_space(i);
-    frame_anterior = imcrop(img, [A(indice,1) A(indice,2) w/3 h/3]);
-    frame_atual = imcrop(img2, [A(indice,1) A(indice,2) w/3 h/3]);
-    if player == 'x'
-%         T = imread('X_rots.jpg');
-%         T = rgb2gray(T);
-%         H = vision.TemplateMatcher;
-%         I = imabsdiff(img,img2);
-%         LOC = step(H,I,T);
+% free_space = find(~board);
+% for i = 1:length(free_space)
+%     indice = free_space(i);
+%     %indice = 1;
+%     frame_anterior = imcrop(img, [A(indice,1) A(indice,1) w/3 h/3]);
+%     frame_atual = imcrop(img2, [A(indice,2) A(indice,1) w/3 h/3]);
+%     diff = imabsdiff(frame_anterior,frame_atual);
+%     if player == 'x'
+% %         T = imread('X_rots.jpg');
+% %         T = rgb2gray(T);
+% %         H = vision.TemplateMatcher;
+% %         I = imabsdiff(img,img2);
+% %         LOC = step(H,I,T);
+% %         break
+% %     [h,w] = size(img_border);
+% %     img_border = imcrop(img_border, [1+h/8 1+w/8 w/8 h/8]); 
+%     img_border = edge(diff,'canny', 0.3);
+%     img_border = imclearborder(img_border);
+%    % img_border = bwmorph(img_border,'skel',Inf);
+% %     img_border = getBoard(img_border);
+%    % status = regionprops(img_border,'Centroid',...
+%    % 'MajorAxisLength','MinorAxisLength');
+% 
+% 
+%     figure, imshow(img_border)
+%     [H,theta,rho] = hough(img_border);
+%     P = houghpeaks(H,2);
+%     lines = houghlines(frame_atual,theta,rho,P);
+% %     for k = 1:length(lines)
+%          xy = [lines(1).point1; lines(1).point2];
+% %         for l = 1:length(lines)
+%              uv = [lines(2).point1; lines(2).point2];
+% %             if xy == uv 
+% %                 continue
+% %             end
+%             [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+% %         end
+% %     end
+%     LOC = [w,v];
+%     else
+%         [LOC, raddi] = imfindcircles(frame_anterior, [6 18]);
+%     end
+%     if ~isempty(LOC)
 %         break
-    img_border = edge(frame_atual,'canny', 0.5);
-    img_border = imclearborder(img_border);
-    figure, imshow(img_border)
-    [H,theta,rho] = hough(img_border);
-    P = houghpeaks(H,8);
-    lines = houghlines(frame_atual,theta,rho,P);
-    for k = 1:length(lines)
-        xy = [lines(k).point1; lines(k).point2];
-        for l = 1:length(lines)
-            uv = [lines(l).point1; lines(l).point2];
-            if xy == uv 
-                continue
-            end
-           [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
-        end
-    end
-    pause
+%     end
+% end
+% 
+% %marca no board ajogada do player
+% %board(i) = 1;   %marca a jogada do player como 1
+% % figure, imshow(img)
+% % hold on
+% % plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','blue');
+% % hold off
 
-    else
-        [LOC, raddi] = imfindcircles(frame_anterior, [6 18]);
-    end
-    if ~isempty(LOC)
-        break
-    end
-end
-
-%marca no board ajogada do player
-board(i) = 1;   %marca a jogada do player como 1
-figure, imshow(img)
-hold on
-plot(LOC(1),LOC(2),'x','LineWidth',2,'Color','blue');
-hold off
-
+imshow(img)
 %computador faz jogada
 pc = find(~board);
 pc = pc(randperm(length(pc)));
@@ -118,7 +128,7 @@ col = (A(pc,1) + h/6);
 
 if player == 'x'
     hold on
-    viscircles([x y],30,'EdgeColor','b');
+    viscircles([col row],20,'EdgeColor','b');
     hold off
 else
  hold on
@@ -130,19 +140,18 @@ else
  hold off
 end
 
-
 function img = openImage(name)
     img = imread(name);
     img = rgb2gray(img);
-    img = imresize(img, [300, 300]);
+    img = imresize(img, [200, 200]);
 end
 
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
-    x_c = corners.Location(:,2);
-    y_c = corners.Location(:,1);
+    x_c = floor(abs(corners.Location(:,2)));
+    y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
-    board = imresize(board, [300, 300]);
+    board = imresize(board, [200, 200]);
 end
 
 
