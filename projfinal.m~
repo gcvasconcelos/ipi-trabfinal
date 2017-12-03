@@ -6,12 +6,24 @@ clc
 % preview(cam);
 % snapshot(cam);
 
-img = imread('teste4.jpg');
+img = imread('teste2.jpg');
 img = rgb2gray(img);
+img = imresize(img, [300, 300]);
+
+corners = detectHarrisFeatures(img);
+
+figure, imshow(img);
+hold on
+corners.plot;
+hold off
+
+x_c = corners.Location(:,2);
+y_c = corners.Location(:,1);
+board_fig = img(min(x_c):max(x_c),min(y_c):max(y_c));
+figure, imshow(board_fig);
 
 borders = edge(img,'canny', 0.5);
 imshow(borders);
-
 
 [H,theta,rho] = hough(borders);
 peaks = houghpeaks(H,4);
@@ -26,22 +38,24 @@ axis on, axis normal, hold on
 x = theta(peaks(:,2));
 y = rho(peaks(:,1));
 plot(x,y,'s','color','red');
-
 hold off
 
 figure(2), imshow(img);
 hold on
-
 for k = 1:length(lines)
    xy = [lines(k).point1; lines(k).point2];
    plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
 
-   % Plot beginnings and ends of lines
    plot(xy(1,1),xy(1,2),'x','LineWidth',5,'Color','red');
    plot(xy(2,1),xy(2,2),'x','LineWidth',5,'Color','red');
 end
 
 hold off
+
+board = zeros(3, 3);
+
+
+
 
 
 
