@@ -5,9 +5,13 @@ clc
 cam = webcam;
 preview(cam);
 
-while(1)
-    tmp1 = snapshot(cam);
-    
+frame = getSnapshot(cam);
+for i=1:10
+    lastframe = frame;
+    frame = getSnapshot(cam);
+    frame = getBoard(frame);
+    imshow(img);
+    pause;
 end
 
 
@@ -20,10 +24,16 @@ end
 % img2 = getBoard(img2);
 
 
+function tmp = getSnapshot(cam)
+    tmp = snapshot(cam);
+    tmp = rgb2gray(tmp);
+    tmp = imresize(tmp, [200, 200]);
+end
+
 function img = openImage(name)
     img = imread(name);
     img = rgb2gray(img);
-    img = imresize(img, [100, 100]);
+    img = imresize(img, [200, 200]);
 end
 
 function board = getBoard(img)
@@ -31,9 +41,8 @@ function board = getBoard(img)
     x_c = floor(abs(corners.Location(:,2)));
     y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
-    board = imresize(board, [100, 100]);
+    board = imresize(board, [200, 200]);
 end
-
 
 function [] = computerTurn()
 end

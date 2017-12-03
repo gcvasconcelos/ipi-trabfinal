@@ -2,68 +2,53 @@ close all
 clear all
 clc
 
-% cam = webcam;
+cam = webcam;
 % preview(cam);
-% snapshot(cam);
 
-img = openImage('teste2.jpg');
-img2 = openImage('teste3.jpg');
+for i=1:10
+    tmp1 = getSnapshot(cam);
+    
+    anterio = getSnapshot(cam);
+    diff = imabsdiff(tmp1, tmp2);
+    
+    pause;
+end
 
-img = getBoard(img);
-img2 = getBoard(img2);
 
-
-
-
-% borders = edge(img,'canny', 0.5);
-% [H,theta,rho] = hough(borders);
-% peaks = houghpeaks(H,5);
-% lines = houghlines(img,theta,rho,peaks);
+% img = openImage('teste2.jpg');
+% img2 = openImage('teste3.jpg');
+% board = zeros(3, 3);
 % 
-% figure(1), imshow(imadjust(rescale(H)),'XData',theta,'YData',rho, 'InitialMagnification','fit');
-% title('Transformada de Hough no tabuleiro do jogo da velha');
-% xlabel('\theta'), ylabel('\rho');
 % 
-% axis on, axis normal, hold on
-% 
-% x = theta(peaks(:,2));
-% y = rho(peaks(:,1));
-% plot(x,y,'s','color','red');
-% hold off
-% 
-% figure(2), imshow(img);
-% hold on
-% for k = 1:length(lines)
-%    xy = [lines(k).point1; lines(k).point2];
-%    plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
-% 
-%    plot(xy(1,1),xy(1,2),'x','LineWidth',5,'Color','red');
-%    plot(xy(2,1),xy(2,2),'x','LineWidth',5,'Color','red');
-% end
-% 
-% hold off
+% img = getBoard(img);
+% img2 = getBoard(img2);
 
-board = zeros(3, 3);
+
+function tmp = getSnapshot(cam)
+    tmp = snapshot(cam);
+    tmp = rgb2gray(tmp);
+    tmp = imresize(tmp, [200, 200]);
+end
 
 function img = openImage(name)
     img = imread(name);
     img = rgb2gray(img);
-    img = imresize(img, [300, 300]);
+    img = imresize(img, [200, 200]);
 end
 
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
-    x_c = corners.Location(:,2);
-    y_c = corners.Location(:,1);
+    x_c = floor(abs(corners.Location(:,2)));
+    y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
-    board = imresize(board, [300, 300]);
+    board = imresize(board, [200, 200]);
 end
-
-
 
 function [] = computerTurn()
 end
 
+function [] = drawPlay()
+end
 
 function result = won(board, op)
     % horizontal
@@ -87,5 +72,6 @@ function result = won(board, op)
         result = board(1,3);
     else
         result = 0;
+    end
 end
 
