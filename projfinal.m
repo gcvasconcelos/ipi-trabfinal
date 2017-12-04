@@ -21,9 +21,7 @@ while result == -1
     %pega primeira jogada
     frame = getSnapshot(cam);
     frame = getBoard(frame);
-
-%     imshow(frame)
-%     find(frame==1)
+    
 
     diff = psnr(frame, lastframe);
     if (diff < 40)
@@ -100,7 +98,7 @@ function [bool, board] = findCircle(prevframe, frame, board)
         board_y = 1;
     end
 
-    board(board_x,board_y) = 1;
+    board(board_y,board_x) = 1;
     bool = 'o';
 end
 
@@ -115,20 +113,55 @@ function board = findCross(prevframe, frame, board)
     %segmentação
     img_border = edge(diff,'canny', 0.5);
     img_border = imclearborder(img_border);
+%     se = strel('disk', 4, 0);
+%     img_border = imopen(img_border,se);
+%     img_border = bwmorph(img_border,'skel',Inf);
+    
     %hough lines
     [H,theta,rho] = hough(img_border);
-    P = houghpeaks(H,5);
-    lines = houghlines(img_border,theta,rho,P);
+    P = houghpeaks(H,4);
+    lines = houghlines(img_border,theta,rho,P,'MinLength',7);
+    
+    %plotalinhas
+%     figure, imshow(img_border)
+%     hold on
+%         for k = 1:length(lines)
+%            xy = [lines(k).point1; lines(k).point2];
+%            plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+% 
+%            plot(xy(1,1),xy(1,2),'x','LineWidth',5,'Color','red');
+%            plot(xy(2,1),xy(2,2),'x','LineWidth',5,'Color','red');
+%         end
+%     hold off
+    
     %checa se tem interseccao
-    xy = [lines(1).point1; lines(1).point2];
-    uv = [lines(2).point1; lines(2).point2];
-    [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
-    center = [w,v];
+    %caso ideal
+%     xy = [lines(1).point1; lines(1).point2];
+%     uv = [lines(2).point1; lines(2).point2];
+%     [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+%     center = [w,v];
+
+    %real
+    for k = 1:length(lines)
+         xy = [lines(k).point1; lines(k).point2];
+        for l = 1:length(lines)
+             uv = [lines(l).point1; lines(l).point2];
+            if xy == uv 
+                continue
+            end
+            [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+            center = [w,v];
+            if ~isempty(center)
+                break
+            end
+        end
+        
+    end
 
     %localização
     x = center(1);
     y = center(2);
-    board_size = size(img2);
+    board_size = size(frame);
     cell_x = board_size(1)/3;
     cell_y = board_size(2)/3;
 

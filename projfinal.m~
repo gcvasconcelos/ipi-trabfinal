@@ -6,23 +6,32 @@ cam = webcam;
 preview(cam);
 
 board = zeros(3, 3);
+%pega primeiro frame sem jogadas
 frame = getSnapshot(cam);
+frame = getBoard(frame);
+
 
 result = won(board);
+imshow(frame)
 hold on
 while result == -1
     lastframe = frame;
+    pause;
+
+    %pega primeira jogada
     frame = getSnapshot(cam);
     frame = getBoard(frame);
 
-    pause;
+%     imshow(frame)
+%     find(frame==1)
+
     diff = psnr(frame, lastframe);
-    if (diff < 22)
-        check = findCircle(lastframe, frame, board);
+    if (diff < 40)
+        [check, board] = findCircle(lastframe, frame, board);
         if (check == 'x')
-            findCross(lastframe, frame, board);
+            board = findCross(lastframe, frame, board);
         end
-        computerTurn(frame, board, check);
+        board = computerTurn(frame, board, check);
         result = won(board);
     end
 end
@@ -41,6 +50,8 @@ end
 % retorna apenas a parte da imagem com o tabuleiro
 function board = getBoard(img)
     corners = detectHarrisFeatures(img);
+    % pega o menor valor a esquerda e acima e o maior valor a direita e
+    % abaixo para considerar como as bordas da nova imagem
     x_c = floor(abs(corners.Location(:,2)));
     y_c = floor(abs(corners.Location(:,1)));
     board = img(min(x_c):max(x_c),min(y_c):max(y_c));
@@ -49,9 +60,13 @@ end
 
 % detecta qual jogada aconteceu entre cada estado do frame
 % registra a jogada no board
-function bool = findCircle(prevframe, frame, board)
+function [bool, board] = findCircle(prevframe, frame, board)
+
+    %diferenca entre frames
     diff = prevframe-frame;
-    diff = im2bw(diff, 0.4);
+    %diff = im2bw(diff, 0.4);
+    diff = imbinarize(diff);
+
     center = floor(imfindcircles(diff,[6 18]));
     if (length(center) > 1)
         center = center(1,:);
@@ -60,6 +75,7 @@ function bool = findCircle(prevframe, frame, board)
         return;
     end
 
+    %localização
     x = center(1); y = center(2);
     board_size = size(frame);
     cell_x = board_size(1)/3; cell_y = board_size(2)/3;
@@ -88,31 +104,68 @@ function bool = findCircle(prevframe, frame, board)
     bool = 'o';
 end
 
-function findCross(prevframe, frame, board)
+function board = findCross(prevframe, frame, board)
+
     %Faz diferença entre frame
     diff = prevframe-frame;
-    diff = im2bw(diff, 0.4);
-    
+    %diff = im2bw(diff, 0.4);
+    diff = imbinarize(diff);
+
     %encontra o X
     %segmentação
     img_border = edge(diff,'canny', 0.5);
     img_border = imclearborder(img_border);
+%     se = strel('disk', 4, 0);
+%     img_border = imopen(img_border,se);
+%     img_border = bwmorph(img_border,'skel',Inf);
+    
     %hough lines
     [H,theta,rho] = hough(img_border);
-    P = houghpeaks(H,5);
-    lines = houghlines(img_border,theta,rho,P);
-    %checa se tem interseccao
-    xy = [lines(1).point1; lines(1).point2];
-    uv = [lines(2).point1; lines(2).point2];
-    [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
-    center = [w,v];
+    P = houghpeaks(H,4);
+    lines = houghlines(img_border,theta,rho,P,'MinLength',7);
     
+    %plotalinhas
+    figure, imshow(img_border)
+    hold on
+        for k = 1:length(lines)
+           xy = [lines(k).point1; lines(k).point2];
+           plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+
+           plot(xy(1,1),xy(1,2),'x','LineWidth',5,'Color','red');
+           plot(xy(2,1),xy(2,2),'x','LineWidth',5,'Color','red');
+        end
+    hold off
+    
+    %checa se tem interseccao
+    %caso ideal
+%     xy = [lines(1).point1; lines(1).point2];
+%     uv = [lines(2).point1; lines(2).point2];
+%     [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+%     center = [w,v];
+
+    %real
+    for k = 1:length(lines)
+         xy = [lines(k).point1; lines(k).point2];
+        for l = 1:length(lines)
+             uv = [lines(l).point1; lines(l).point2];
+            if xy == uv 
+                continue
+            end
+            [w,v] = polyxpoly(xy(:,1),xy(:,2),uv(:,1),uv(:,2));
+            center = [w,v];
+            if ~isempty(center)
+                break
+            end
+        end
+        
+    end
+
     %localização
     x = center(1);
     y = center(2);
-    size = size(img2);
-    cell_x = size(1)/3;
-    cell_y = size(2)/3;
+    board_size = size(img2);
+    cell_x = board_size(1)/3;
+    cell_y = board_size(2)/3;
 
     if (x>cell_x)
         if (x>(cell_x*2))
@@ -138,7 +191,7 @@ function findCross(prevframe, frame, board)
 end
 
 % jogada do PC
-function [] = computerTurn(frame, board, player)
+function board = computerTurn(frame, board, player)
     % frame = frame atual
     % board = board sendo, 0 as posicoes vazias
     % player = a opção de jogada do player
@@ -224,6 +277,7 @@ function result = won(board)
     end
 end
 
+% verifica quem venceu e printa na tela
 function [] = checkWin(result)
     if (result == 0)
         warndlg('Ninguém ganhou!')
