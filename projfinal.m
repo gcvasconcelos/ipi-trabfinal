@@ -2,16 +2,23 @@ close all
 clear all
 clc
 
+%criação do objeeto camera para mostrar o video
 cam = webcam;
 preview(cam);
 
+%criação de uma matrizz para ser usada como referencia
+%Na matriz é utilizado:
+%1 - jogada do usuário
+%2 - jogada do computador
+%3 - espaço vazio
 board = zeros(3, 3);
+
 %pega primeiro frame sem jogadas
 frame = getSnapshot(cam);
 frame = getBoard(frame);
 
-
 result = won(board);
+%mostra iamgem onde seram plotadas as jogadas do computador
 imshow(frame)
 hold on
 while result == -1
@@ -62,9 +69,9 @@ function [bool, board] = findCircle(prevframe, frame, board)
 
     %diferenca entre frames
     diff = prevframe-frame;
-    %diff = im2bw(diff, 0.4);
     diff = imbinarize(diff);
 
+    %utliza a transformada de hough para d[eterminar o centro do circulo
     center = floor(imfindcircles(diff,[6 18]));
     if (length(center) > 1)
         center = center(1,:);
@@ -73,7 +80,7 @@ function [bool, board] = findCircle(prevframe, frame, board)
         return;
     end
 
-    %localização
+    %localização no tabuleiro estimar localização no board
     x = center(1); y = center(2);
     board_size = size(frame);
     cell_x = board_size(1)/3; cell_y = board_size(2)/3;
@@ -98,6 +105,7 @@ function [bool, board] = findCircle(prevframe, frame, board)
         board_y = 1;
     end
 
+    %marca no tabuleiro a localização do circulo encontrado
     board(board_y,board_x) = 1;
     bool = 'o';
 end
@@ -106,23 +114,19 @@ function board = findCross(prevframe, frame, board)
 
     %Faz diferença entre frame
     diff = prevframe-frame;
-    %diff = im2bw(diff, 0.4);
     diff = imbinarize(diff);
 
     %encontra o X
     %segmentação
     img_border = edge(diff,'canny', 0.5);
     img_border = imclearborder(img_border);
-%     se = strel('disk', 4, 0);
-%     img_border = imopen(img_border,se);
-%     img_border = bwmorph(img_border,'skel',Inf);
     
     %hough lines
     [H,theta,rho] = hough(img_border);
     P = houghpeaks(H,4);
     lines = houghlines(img_border,theta,rho,P,'MinLength',7);
     
-    %plotalinhas
+    %plota linhas
 %     figure, imshow(img_border)
 %     hold on
 %         for k = 1:length(lines)
@@ -184,7 +188,8 @@ function board = findCross(prevframe, frame, board)
     else
         board_y = 1;
     end
-    %escreve no board
+    
+    %escreve no board a localização do X
     board(board_y,board_x) = 1;
 end
 
@@ -223,12 +228,6 @@ function board = computerTurn(frame, board, player)
         hold on
         viscircles([col row],20,'EdgeColor','red');
         hold off
-        % hold on
-        % t = 0:0.1:2*pi;
-        % x = cos(t)/2+0.5;
-        % y = sin(t)/2+0.5;
-        % plot(x+col, y+row)
-        % hold off
     else
         % plota X
         hold on
